@@ -3,7 +3,6 @@ library(nortest)
 library(car)
 library(boot)
 library(rpart)
-library(rpart.plot)
 library(e1071)
 
 # Import the data
