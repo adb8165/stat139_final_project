@@ -16,6 +16,100 @@ bostondata = within(bostondata, rm(Parcel_ID, CM_ID))
 bostondata = within(bostondata, rm(Owner_MAIL_ADDRESS, Owner_MAIL_CS, Owner_MAIL_ZIPCODE))
 bostondata = within(bostondata, rm(full_address))
 
+# Clean up silly entries
+bostondata$AV_TOTAL[bostondata$AV_TOTAL==0|bostondata$AV_TOTAL> 50000000] = NA
+bostondata$LU = factor(bostondata$LU,levels=c("R1","R2","R3","R4","RL","A","RC","CM","CD","CP","CC","AH",
+                                      "C","CL","I","E","EA"))
+bostondata$OWN_OCC = factor(bostondata$OWN_OCC, levels = c("Y","N"))
+bostondata$GROSS_AREA[bostondata$GROSS_AREA == 0] = NA
+bostondata$NUM_FLOORS[bostondata$NUM_FLOORS > 100 | bostondata$NUM_FLOORS  < 1] = NA
+bostondata$LAND_SF[bostondata$LAND_SF == 0| bostondata$LAND_SF > 10000000] = NA
+bostondata$YR_BUILT[bostondata$YR_BUILT < 1000 | bostondata$YR_BUILT == 0 | bostondata$YR_BUILT>2014] =NA
+bostondata = na.omit(bostondata)
+
+# Clean up ST_NUM
+bostondata$ST_NUM_15 <- (bostondata$ST_NUM == 15)
+bostondata$ST_NUM_1 <- (bostondata$ST_NUM == 1)
+bostondata$ST_NUM_10 <- (bostondata$ST_NUM == 10)
+bostondata$ST_NUM_9 <- (bostondata$ST_NUM == 9)
+bostondata$ST_NUM_2 <- (bostondata$ST_NUM == 2)
+bostondata$ST_NUM_11 <- (bostondata$ST_NUM == 11)
+bostondata$ST_NUM_8 <- (bostondata$ST_NUM == 8)
+bostondata$ST_NUM_6 <- (bostondata$ST_NUM == 6)
+bostondata$ST_NUM_7 <- (bostondata$ST_NUM == 7)
+bostondata$ST_NUM_12 <- (bostondata$ST_NUM == 12)
+bostondata$ST_NUM_5 <- (bostondata$ST_NUM == 5)
+bostondata$ST_NUM_19 <- (bostondata$ST_NUM == 19)
+bostondata$ST_NUM_21 <- (bostondata$ST_NUM == 21)
+bostondata$ST_NUM_20 <- (bostondata$ST_NUM == 20)
+bostondata$ST_NUM_16 <- (bostondata$ST_NUM == 16)
+bostondata = within(bostondata, rm(ST_NUM))
+
+# Clean up UNIT_NUM
+bostondata$UNIT_NUM_1 <- (bostondata$UNIT_NUM == 1)
+bostondata$UNIT_NUM_2 <- (bostondata$UNIT_NUM == 2)
+bostondata$UNIT_NUM_3 <- (bostondata$UNIT_NUM == 3)
+bostondata$UNIT_NUM_4 <- (bostondata$UNIT_NUM == 4)
+bostondata$UNIT_NUM_5 <- (bostondata$UNIT_NUM == 5)
+bostondata$UNIT_NUM_6 <- (bostondata$UNIT_NUM == 6)
+bostondata$UNIT_NUM_7 <- (bostondata$UNIT_NUM == 7)
+bostondata$UNIT_NUM_8 <- (bostondata$UNIT_NUM == 8)
+bostondata$UNIT_NUM_9 <- (bostondata$UNIT_NUM == 9)
+bostondata = within(bostondata, rm(UNIT_NUM))
+
+# Clean up ST_NAME
+bostondata$ST_NAME_COMMONWEALTH <- (bostondata$ST_NAME == 'COMMONWEALTH')
+bostondata$ST_NAME_BEACON <- (bostondata$ST_NAME == 'BEACON')
+bostondata$ST_NAME_WASHINGTON <- (bostondata$ST_NAME == 'WASHINGTON')
+bostondata$ST_NAME_TREMONT <- (bostondata$ST_NAME == 'TREMONT')
+bostondata$ST_NAME_DORCHESTER <- (bostondata$ST_NAME == 'DORCHESTER')
+bostondata$ST_NAME_MARLBOROUGH <- (bostondata$ST_NAME == 'MARLBOROUGH')
+bostondata$ST_NAME_CENTRE <- (bostondata$ST_NAME == 'CENTRE')
+bostondata$ST_NAME_PARK <- (bostondata$ST_NAME == 'PARK')
+bostondata$ST_NAME_HAWTHORNE <- (bostondata$ST_NAME == 'HAWTHORNE')
+bostondata$ST_NAME_MASSACHUSETTS <- (bostondata$ST_NAME == 'MASSACHUSETTS')
+bostondata$ST_NAME_COLUMBUS <- (bostondata$ST_NAME == 'COLUMBUS')
+bostondata$ST_NAME_ADAMS <- (bostondata$ST_NAME == 'ADAMS')
+bostondata$ST_NAME_HYDE_PARK <- (bostondata$ST_NAME == 'HYDE PARK')
+bostondata$ST_NAME_BOYLSTON <- (bostondata$ST_NAME == 'BOYLSTON')
+bostondata$ST_NAME_COMMERCIAL <- (bostondata$ST_NAME == 'COMMERCIAL')
+bostondata$ST_NAME_NEWBURY <- (bostondata$ST_NAME == 'NEWBURY')
+bostondata$ST_NAME_SOUTH <- (bostondata$ST_NAME == 'SOUTH')
+bostondata$ST_NAME_HARVARD <- (bostondata$ST_NAME == 'HARVARD')
+bostondata$ST_NAME_MT_VERNON <- (bostondata$ST_NAME == 'MT VERNON')
+bostondata$ST_NAME_CHESTNUT <- (bostondata$ST_NAME == 'CHESTNUT')
+bostondata$ST_NAME_RIVER <- (bostondata$ST_NAME == 'RIVER')
+bostondata$ST_NAME_E_INDIA <- (bostondata$ST_NAME == 'E INDIA')
+bostondata$ST_NAME_SARATOGA <- (bostondata$ST_NAME == 'SARATOGA')
+bostondata$ST_NAME_EIGHTH <- (bostondata$ST_NAME == 'EIGHTH')
+bostondata$ST_NAME_WARREN <- (bostondata$ST_NAME == 'WARREN')
+bostondata$ST_NAME_BLUE_HILL <- (bostondata$ST_NAME == 'BLUE HILL')
+bostondata$ST_NAME_HARRISON <- (bostondata$ST_NAME == 'HARRISON')
+bostondata$ST_NAME_HUNTINGTON <- (bostondata$ST_NAME == 'HUNTINGTON')
+bostondata$ST_NAME_SHAWMUT <- (bostondata$ST_NAME == 'SHAWMUT')
+bostondata$ST_NAME_E_BROADWAY <- (bostondata$ST_NAME == 'E BROADWAY')
+bostondata$ST_NAME_WHITTIER <- (bostondata$ST_NAME == 'WHITTIER')
+bostondata$ST_NAME_BENNINGTON <- (bostondata$ST_NAME == 'BENNINGTON')
+bostondata = within(bostondata, rm(ST_NAME))
+
+# Clean up ST_NAME_SUF
+bostondata$ST_NAME_SUF_AV <- (bostondata$ST_NAME_SUF == 'AV')
+bostondata$ST_NAME_SUF_BL <- (bostondata$ST_NAME_SUF == 'BL')
+bostondata$ST_NAME_SUF_CI <- (bostondata$ST_NAME_SUF == 'CI')
+bostondata$ST_NAME_SUF_CT <- (bostondata$ST_NAME_SUF == 'CT')
+bostondata$ST_NAME_SUF_DR <- (bostondata$ST_NAME_SUF == 'DR')
+bostondata$ST_NAME_SUF_HW <- (bostondata$ST_NAME_SUF == 'HW')
+bostondata$ST_NAME_SUF_LA <- (bostondata$ST_NAME_SUF == 'LA')
+bostondata$ST_NAME_SUF_PK <- (bostondata$ST_NAME_SUF == 'PK')
+bostondata$ST_NAME_SUF_PL <- (bostondata$ST_NAME_SUF == 'PL')
+bostondata$ST_NAME_SUF_PW <- (bostondata$ST_NAME_SUF == 'PW')
+bostondata$ST_NAME_SUF_RD <- (bostondata$ST_NAME_SUF == 'RD')
+bostondata$ST_NAME_SUF_SQ <- (bostondata$ST_NAME_SUF == 'SQ')
+bostondata$ST_NAME_SUF_ST <- (bostondata$ST_NAME_SUF == 'ST')
+bostondata$ST_NAME_SUF_TE <- (bostondata$ST_NAME_SUF == 'TE')
+bostondata$ST_NAME_SUF_WY <- (bostondata$ST_NAME_SUF == 'WY')
+bostondata = within(bostondata, rm(ST_NAME_SUF))
+
 # Clean up the U_CORNER field
 bostondata$U_CORNER_CLEAN <- (bostondata$U_CORNER == 'Y')
 bostondata = within(bostondata, rm(U_CORNER))
@@ -36,13 +130,67 @@ bostondata$U_HEAT_TYP_E <- (bostondata$U_HEAT_TYP == 'E')
 bostondata$U_HEAT_TYP_P <- (bostondata$U_HEAT_TYP == 'P')
 bostondata = within(bostondata, rm(U_HEAT_TYP))
 
+# Clean ZIPCODE
+bostondata$ZIPCODE_02116 <- (bostondata$ZIPCODE== '02116')
+bostondata$ZIPCODE_02135 <- (bostondata$ZIPCODE== '02135')
+bostondata$ZIPCODE_02127 <- (bostondata$ZIPCODE== '02127')
+bostondata$ZIPCODE_02118 <- (bostondata$ZIPCODE== '02118')
+bostondata$ZIPCODE_02130 <- (bostondata$ZIPCODE== '02130')
+bostondata$ZIPCODE_02129 <- (bostondata$ZIPCODE== '02129')
+bostondata$ZIPCODE_02115 <- (bostondata$ZIPCODE== '02115')
+bostondata$ZIPCODE_02114 <- (bostondata$ZIPCODE== '02114')
+bostondata$ZIPCODE_02215 <- (bostondata$ZIPCODE== '02215')
+bostondata$ZIPCODE_02134 <- (bostondata$ZIPCODE== '02134')
+bostondata$ZIPCODE_02125 <- (bostondata$ZIPCODE== '02125')
+bostondata$ZIPCODE_02111 <- (bostondata$ZIPCODE== '02111')
+bostondata$ZIPCODE_02131 <- (bostondata$ZIPCODE== '02131')
+bostondata$ZIPCODE_02124 <- (bostondata$ZIPCODE== '02124')
+bostondata$ZIPCODE_02128 <- (bostondata$ZIPCODE== '02128')
+bostondata$ZIPCODE_02109 <- (bostondata$ZIPCODE== '02109')
+bostondata$ZIPCODE_02122 <- (bostondata$ZIPCODE== '02122')
+bostondata$ZIPCODE_02113 <- (bostondata$ZIPCODE== '02113')
+bostondata$ZIPCODE_02132 <- (bostondata$ZIPCODE== '02132')
+bostondata$ZIPCODE_02110 <- (bostondata$ZIPCODE== '02110')
+bostondata$ZIPCODE_02108 <- (bostondata$ZIPCODE== '02108')
+bostondata$ZIPCODE_02119 <- (bostondata$ZIPCODE== '02119')
+bostondata$ZIPCODE_02467 <- (bostondata$ZIPCODE== '02467')
+bostondata = within(bostondata, rm(ZIPCODE))
+
 head(bostondata)
 names(bostondata)
+sort(table(bostondata$ZIPCODE))
 
 fit = lm(AV_TOTAL ~ GROSS_AREA + NUM_FLOORS + LIVING_AREA + LAND_SF +
-           YR_BUILT + YR_REMOD + STRUCTURE_CLASS + 
+           YR_BUILT + YR_REMOD + STRUCTURE_CLASS +
+           
+           ST_NUM_15 + ST_NUM_1 + ST_NUM_10 + ST_NUM_9 + ST_NUM_10 + ST_NUM_2 +
+           ST_NUM_11 + ST_NUM_8 + ST_NUM_6 + ST_NUM_7 + ST_NUM_12 + ST_NUM_5 + ST_NUM_19 +
+           ST_NUM_21 + ST_NUM_20 + ST_NUM_16 + 
+           
+           UNIT_NUM_1 + UNIT_NUM_2 + UNIT_NUM_3 + UNIT_NUM_4 + UNIT_NUM_5 +
+           UNIT_NUM_6 + UNIT_NUM_7 + UNIT_NUM_8 + UNIT_NUM_9 +
+           
+           ST_NAME_SUF_AV + ST_NAME_SUF_BL + ST_NAME_SUF_CI + ST_NAME_SUF_CT + ST_NAME_SUF_DR + 
+           ST_NAME_SUF_HW + ST_NAME_SUF_LA + ST_NAME_SUF_PK + ST_NAME_SUF_PL + ST_NAME_SUF_PW +
+           ST_NAME_SUF_RD + ST_NAME_SUF_SQ + ST_NAME_SUF_ST + ST_NAME_SUF_TE + ST_NAME_SUF_WY + 
            
            
+           ZIPCODE_02116 + ZIPCODE_02135 + ZIPCODE_02127 + ZIPCODE_02118 + ZIPCODE_02130 +
+           ZIPCODE_02129 + ZIPCODE_02115 + ZIPCODE_02114 + ZIPCODE_02215 + ZIPCODE_02134 + 
+           ZIPCODE_02125 + ZIPCODE_02111 + ZIPCODE_02131 + ZIPCODE_02124 + ZIPCODE_02128 + 
+           ZIPCODE_02109 + ZIPCODE_02215 + ZIPCODE_02134 + ZIPCODE_02125 + ZIPCODE_02111 + 
+           ZIPCODE_02131 + ZIPCODE_02124 + ZIPCODE_02128 + ZIPCODE_02109 + ZIPCODE_02122 +
+           ZIPCODE_02113 + ZIPCODE_02132 + ZIPCODE_02110 + ZIPCODE_02108 + ZIPCODE_02119 +
+           ZIPCODE_02467 +
+           
+           ST_NAME_COMMONWEALTH + ST_NAME_BEACON + ST_NAME_WASHINGTON + ST_NAME_TREMONT + 
+           ST_NAME_DORCHESTER + ST_NAME_MARLBOROUGH + ST_NAME_CENTRE + ST_NAME_PARK + 
+           ST_NAME_HAWTHORNE + ST_NAME_MASSACHUSETTS + ST_NAME_COLUMBUS + ST_NAME_ADAMS + 
+           ST_NAME_HYDE_PARK + ST_NAME_BOYLSTON + ST_NAME_COMMERCIAL + ST_NAME_NEWBURY + 
+           ST_NAME_SOUTH + ST_NAME_HARVARD + ST_NAME_MT_VERNON + ST_NAME_CHESTNUT + 
+           ST_NAME_RIVER + ST_NAME_E_INDIA + ST_NAME_SARATOGA + ST_NAME_EIGHTH + ST_NAME_WARREN + 
+           ST_NAME_BLUE_HILL + ST_NAME_HARRISON + ST_NAME_HUNTINGTON + ST_NAME_SHAWMUT + 
+           ST_NAME_E_BROADWAY + ST_NAME_WHITTIER + ST_NAME_BENNINGTON + 
            
            U_BDRMS + U_FPLACE + U_HALF_BTH + U_FULL_BTH + U_TOT_RMS + U_CORNER_CLEAN +
            U_ORIENT_T + U_ORIENT_F + U_ORIENT_A + U_ORIENT_B + U_ORIENT_C + U_ORIENT_M +
