@@ -39,9 +39,13 @@ bostondata = within(bostondata, rm(U_HEAT_TYP))
 head(bostondata)
 names(bostondata)
 
-fit = lm(AV_TOTAL~U_BDRMS+U_FPLACE+U_HALF_BTH+U_FULL_BTH+U_TOT_RMS+U_CORNER_CLEAN+
-           U_ORIENT_T+U_ORIENT_F+U_ORIENT_A+U_ORIENT_B+U_ORIENT_C+U_ORIENT_M+
-           U_HEAT_TYP_W+U_HEAT_TYP_F+U_HEAT_TYP_E+U_HEAT_TYP_P
+fit = lm(AV_TOTAL ~ GROSS_AREA + NUM_FLOORS + LIVING_AREA + LAND_SF +
+           YR_BUILT + YR_REMOD + STRUCTURE_CLASS + 
            
+           
+           
+           U_BDRMS + U_FPLACE + U_HALF_BTH + U_FULL_BTH + U_TOT_RMS + U_CORNER_CLEAN +
+           U_ORIENT_T + U_ORIENT_F + U_ORIENT_A + U_ORIENT_B + U_ORIENT_C + U_ORIENT_M +
+           U_HEAT_TYP_W + U_HEAT_TYP_F + U_HEAT_TYP_E + U_HEAT_TYP_P
            ,data=bostondata)
 summary(fit)
