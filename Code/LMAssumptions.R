@@ -4,6 +4,7 @@ library(car)
 library(boot)
 library(rpart)
 library(e1071)
+library(nnet)
 
 # Import the data
 bostondata = read.csv("/Users/Avery/Dropbox/Harvard/Stat139/stat139_final_project/Data/Property_Assessment_2014.csv",header = T)
@@ -15,15 +16,45 @@ bostondata = within(bostondata, rm(Parcel_ID, CM_ID))
 bostondata = within(bostondata, rm(Owner_MAIL_ADDRESS, Owner_MAIL_CS, Owner_MAIL_ZIPCODE))
 bostondata = within(bostondata, rm(full_address))
 
+# Not sure if there is anything useful in this guy
+bostondata = within(bostondata, rm(OWNER))
+bostondata = within(bostondata, rm(S_UNIT_COM, S_UNIT_RC))
+
 # Clean up silly entries
 bostondata$AV_TOTAL[bostondata$AV_TOTAL==0|bostondata$AV_TOTAL> 50000000] = NA
-bostondata$LU = factor(bostondata$LU,levels=c("R1","R2","R3","R4","RL","A","RC","CM","CD","CP","CC","AH",
-                                      "C","CL","I","E","EA"))
-bostondata$OWN_OCC = factor(bostondata$OWN_OCC, levels = c("Y","N"))
+bostondata$LU_CLEAN = factor(bostondata$LU,levels=c('R1','R2','R3','R4','RL','A',"RC","CM","CD","CP","CC","AH","C","CL","I","E","EA"))
+bostondata = within(bostondata, rm(LU))
+
+bostondata$U_ORIENT_CLEAN = factor(bostondata$U_ORIENT,levels=c('T','F','A','B','C','M'))
+bostondata = within(bostondata, rm(U_ORIENT))
+
+bostondata$R_BLDG_STYL_CLEAN = factor(bostondata$R_BLDG_STYL,levels=c('CL','TF','DK','CV','RM','SD','CP','RN','RE','BW','DX','RR','SL','VT'))
+bostondata = within(bostondata, rm(R_BLDG_STYL))
+
+bostondata$STRUCTURE_CLASS_CLEAN = factor(bostondata$STRUCTURE_CLASS,levels=c('R','C','D','B','A'))
+bostondata = within(bostondata, rm(STRUCTURE_CLASS))
+
+bostondata$R_ROOF_TYP_CLEAN = factor(bostondata$R_ROOF_TYP,levels=c('G','F','H','M','L'))
+bostondata = within(bostondata, rm(R_ROOF_TYP))
+
+bostondata$R_EXT_FIN_CLEAN = factor(bostondata$R_EXT_FIN,levels=c('M', 'W','B','F','A','P','S'))
+bostondata = within(bostondata, rm(R_EXT_FIN))
+
+bostondata$PTYPE_CLEAN = factor(bostondata$PTYPE,levels=c(102,101,104,105,995,132,111,985,108,902,13,112,390,130,106,125,357,31,986,358,907,319,320337,905,977,908,332))
+bostondata = within(bostondata, rm(PTYPE))
+
+bostondata$OWN_OCC_CLEAN = factor(bostondata$OWN_OCC, levels = c("Y","N"))
+bostondata = within(bostondata, rm(OWN_OCC))
+
 bostondata$GROSS_AREA[bostondata$GROSS_AREA == 0] = NA
-bostondata$NUM_FLOORS[bostondata$NUM_FLOORS > 100 | bostondata$NUM_FLOORS  < 1] = NA
+bostondata$LIVING_AREA[bostondata$LIVING_AREA == 0] = NA
+
+bostondata$NUM_FLOORS_CLEAN = factor(bostondata$NUM_FLOORS, levels=c('1','1.5','2','2.5','3','3.5','4','4.5','5','6'))
+bostondata = within(bostondata, rm(NUM_FLOORS))
+
 bostondata$LAND_SF[bostondata$LAND_SF == 0| bostondata$LAND_SF > 10000000] = NA
-bostondata$YR_BUILT[bostondata$YR_BUILT < 1000 | bostondata$YR_BUILT == 0 | bostondata$YR_BUILT>2014] =NA
+bostondata$YR_BUILT[bostondata$YR_BUILT < 1000 | bostondata$YR_BUILT == 0 | bostondata$YR_BUILT>2014] = NA
+bostondata$YR_REMOD[bostondata$YR_REMOD < 1000 | bostondata$YR_REMOD == 0 | bostondata$YR_REMOD>2014] =NA
 bostondata = na.omit(bostondata)
 
 # Clean up ST_NUM
@@ -113,15 +144,6 @@ bostondata = within(bostondata, rm(ST_NAME_SUF))
 bostondata$U_CORNER_CLEAN <- (bostondata$U_CORNER == 'Y')
 bostondata = within(bostondata, rm(U_CORNER))
 
-# Clean U_ORIENT
-bostondata$U_ORIENT_T <- (bostondata$U_ORIENT == 'T')
-bostondata$U_ORIENT_F <- (bostondata$U_ORIENT == 'F')
-bostondata$U_ORIENT_A <- (bostondata$U_ORIENT == 'A')
-bostondata$U_ORIENT_B <- (bostondata$U_ORIENT == 'B')
-bostondata$U_ORIENT_C <- (bostondata$U_ORIENT == 'C')
-bostondata$U_ORIENT_M <- (bostondata$U_ORIENT == 'M')
-bostondata = within(bostondata, rm(U_ORIENT))
-
 # Clean U_HEAT_TYP
 bostondata$U_HEAT_TYP_W <- (bostondata$U_HEAT_TYP == 'W')
 bostondata$U_HEAT_TYP_F <- (bostondata$U_HEAT_TYP == 'F')
@@ -155,24 +177,31 @@ bostondata$ZIPCODE_02119 <- (bostondata$ZIPCODE== '02119')
 bostondata$ZIPCODE_02467 <- (bostondata$ZIPCODE== '02467')
 bostondata = within(bostondata, rm(ZIPCODE))
 
-head(bostondata)
-names(bostondata)
-sort(table(bostondata$ZIPCODE))
+#head(bostondata)
+#names(bostondata)
+#sort(table(bostondata$YR_BUILT))
 
-fit = lm(AV_TOTAL ~ GROSS_AREA + NUM_FLOORS + LIVING_AREA + LAND_SF +
-           YR_BUILT + YR_REMOD + STRUCTURE_CLASS +
+fit3 = lm(AV_TOTAL ~ LU_CLEAN + PTYPE_CLEAN +
+           GROSS_AREA + LIVING_AREA + LAND_SF +
+           YR_BUILT + YR_REMOD + STRUCTURE_CLASS_CLEAN + 
+           
+           OWN_OCC_CLEAN + NUM_FLOORS_CLEAN + R_BLDG_STYL_CLEAN +
+           R_ROOF_TYP_CLEAN + R_EXT_FIN_CLEAN + R_TOTAL_RMS + R_BDRMS +
+           R_FULL_BTH + R_HALF_BTH + R_KITCH + R_HEAT_TYP + R_AC +
+           R_FPLACE + 
+           
+           S_NUM_BLDG + 
            
            ST_NUM_15 + ST_NUM_1 + ST_NUM_10 + ST_NUM_9 + ST_NUM_10 + ST_NUM_2 +
            ST_NUM_11 + ST_NUM_8 + ST_NUM_6 + ST_NUM_7 + ST_NUM_12 + ST_NUM_5 + ST_NUM_19 +
            ST_NUM_21 + ST_NUM_20 + ST_NUM_16 + 
-           
+
            UNIT_NUM_1 + UNIT_NUM_2 + UNIT_NUM_3 + UNIT_NUM_4 + UNIT_NUM_5 +
            UNIT_NUM_6 + UNIT_NUM_7 + UNIT_NUM_8 + UNIT_NUM_9 +
            
            ST_NAME_SUF_AV + ST_NAME_SUF_BL + ST_NAME_SUF_CI + ST_NAME_SUF_CT + ST_NAME_SUF_DR + 
            ST_NAME_SUF_HW + ST_NAME_SUF_LA + ST_NAME_SUF_PK + ST_NAME_SUF_PL + ST_NAME_SUF_PW +
            ST_NAME_SUF_RD + ST_NAME_SUF_SQ + ST_NAME_SUF_ST + ST_NAME_SUF_TE + ST_NAME_SUF_WY + 
-           
            
            ZIPCODE_02116 + ZIPCODE_02135 + ZIPCODE_02127 + ZIPCODE_02118 + ZIPCODE_02130 +
            ZIPCODE_02129 + ZIPCODE_02115 + ZIPCODE_02114 + ZIPCODE_02215 + ZIPCODE_02134 + 
@@ -192,7 +221,8 @@ fit = lm(AV_TOTAL ~ GROSS_AREA + NUM_FLOORS + LIVING_AREA + LAND_SF +
            ST_NAME_E_BROADWAY + ST_NAME_WHITTIER + ST_NAME_BENNINGTON + 
            
            U_BDRMS + U_FPLACE + U_HALF_BTH + U_FULL_BTH + U_TOT_RMS + U_CORNER_CLEAN +
-           U_ORIENT_T + U_ORIENT_F + U_ORIENT_A + U_ORIENT_B + U_ORIENT_C + U_ORIENT_M +
-           U_HEAT_TYP_W + U_HEAT_TYP_F + U_HEAT_TYP_E + U_HEAT_TYP_P
-           ,data=bostondata)
-summary(fit)
+           U_ORIENT_CLEAN + U_BASE_FLOOR + 
+           
+           U_HEAT_TYP_W + U_HEAT_TYP_F + U_HEAT_TYP_E + U_HEAT_TYP_P, 
+         data=bostondata)
+summary(fit3)
