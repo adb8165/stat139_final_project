@@ -22,23 +22,28 @@ bostondata = within(bostondata, rm(S_UNIT_COM, S_UNIT_RC))
 
 # Clean up silly entries
 bostondata$AV_TOTAL[bostondata$AV_TOTAL==0|bostondata$AV_TOTAL> 50000000] = NA
+
 bostondata$LU_CLEAN = factor(bostondata$LU,levels=c('R1','R2','R3','R4','RL','A',"RC","CM","CD","CP","CC","AH","C","CL","I","E","EA"))
 bostondata = within(bostondata, rm(LU))
 
 bostondata$U_ORIENT_CLEAN = factor(bostondata$U_ORIENT,levels=c('T','F','A','B','C','M'))
 bostondata = within(bostondata, rm(U_ORIENT))
 
-bostondata$R_BLDG_STYL_CLEAN = factor(bostondata$R_BLDG_STYL,levels=c('CL','TF','DK','CV','RM','SD','CP','RN','RE','BW','DX','RR','SL','VT'))
-bostondata = within(bostondata, rm(R_BLDG_STYL))
+# BROKEN ROWS
+#bostondata$R_BLDG_STYL_CLEAN = factor(bostondata$R_BLDG_STYL,levels=c('CL','TF','DK','CV','RM','SD','CP','RN','RE','BW','DX','RR','SL','VT'))
+#bostondata = within(bostondata, rm(R_BLDG_STYL))
 
-bostondata$STRUCTURE_CLASS_CLEAN = factor(bostondata$STRUCTURE_CLASS,levels=c('R','C','D','B','A'))
-bostondata = within(bostondata, rm(STRUCTURE_CLASS))
+#bostondata$STRUCTURE_CLASS_CLEAN = factor(bostondata$STRUCTURE_CLASS,levels=c('R','C','D','B','A'))
+#summary(bostondata$STRUCTURE_CLASS)
+#bostondata = within(bostondata, rm(STRUCTURE_CLASS))
 
-bostondata$R_ROOF_TYP_CLEAN = factor(bostondata$R_ROOF_TYP,levels=c('G','F','H','M','L'))
-bostondata = within(bostondata, rm(R_ROOF_TYP))
+#bostondata$R_ROOF_TYP_CLEAN = factor(bostondata$R_ROOF_TYP,levels=c('G','F','H','M','L'))
+#summary(bostondata$R_ROOF_TYP)
+#bostondata = within(bostondata, rm(R_ROOF_TYP))
 
-bostondata$R_EXT_FIN_CLEAN = factor(bostondata$R_EXT_FIN,levels=c('M', 'W','B','F','A','P','S'))
-bostondata = within(bostondata, rm(R_EXT_FIN))
+#bostondata$R_EXT_FIN_CLEAN = factor(bostondata$R_EXT_FIN,levels=c('M', 'W','B','F','A','P','S', 'NA'), exclude = NA)
+#summary(bostondata$R_EXT_FIN_CLEAN)
+#bostondata = within(bostondata, rm(R_EXT_FIN))
 
 bostondata$PTYPE_CLEAN = factor(bostondata$PTYPE,levels=c(102,101,104,105,995,132,111,985,108,902,13,112,390,130,106,125,357,31,986,358,907,319,320337,905,977,908,332))
 bostondata = within(bostondata, rm(PTYPE))
@@ -53,11 +58,11 @@ bostondata$NUM_FLOORS_CLEAN = factor(bostondata$NUM_FLOORS, levels=c('1','1.5','
 bostondata = within(bostondata, rm(NUM_FLOORS))
 
 bostondata$LAND_SF[bostondata$LAND_SF == 0| bostondata$LAND_SF > 10000000] = NA
-bostondata$YR_BUILT[bostondata$YR_BUILT < 1000 | bostondata$YR_BUILT == 0 | bostondata$YR_BUILT>2014] = 2000
-bostondata$YR_REMOD[bostondata$YR_REMOD < 1000 | bostondata$YR_REMOD == 0 | bostondata$YR_REMOD>2014] = 2000
+bostondata$YR_BUILT[bostondata$YR_BUILT < 1000 | bostondata$YR_BUILT == 0 | bostondata$YR_BUILT>2014] = NA
+bostondata$YR_REMOD[bostondata$YR_REMOD < 1000 | bostondata$YR_REMOD == 0 | bostondata$YR_REMOD>2014] = NA
 
-# THIS BREAKS EVERYTHING
 bostondata = na.omit(bostondata)
+lengths(bostondata)
 
 # Clean up ST_NUM
 bostondata$ST_NUM_15 <- (bostondata$ST_NUM == 15)
@@ -179,17 +184,26 @@ bostondata$ZIPCODE_02119 <- (bostondata$ZIPCODE== '02119')
 bostondata$ZIPCODE_02467 <- (bostondata$ZIPCODE== '02467')
 bostondata = within(bostondata, rm(ZIPCODE))
 
+# This removes rows with NAs in them
+bostondata = na.omit(bostondata)
+
 #head(bostondata)
 #names(bostondata)
 #sort(table(bostondata$YR_BUILT))
 
+summary(lm(AV_TOTAL ~  R_HEAT_TYP , data=bostondata))
+
+# Rows that break the model :(
+# STRUCTURE_CLASS_CLEAN + R_BLDG_STYL_CLEAN + R_ROOF_TYP_CLEAN +R_EXT_FIN_CLEAN +
+# R_HEAT_TYP + R_AC +
+
 fit3 = lm(AV_TOTAL ~ LU_CLEAN + PTYPE_CLEAN +
            GROSS_AREA + LIVING_AREA + LAND_SF +
-           YR_BUILT + YR_REMOD + STRUCTURE_CLASS_CLEAN + 
+           YR_BUILT + YR_REMOD +  
            
-           OWN_OCC_CLEAN + NUM_FLOORS_CLEAN + R_BLDG_STYL_CLEAN +
-           R_ROOF_TYP_CLEAN + R_EXT_FIN_CLEAN + R_TOTAL_RMS + R_BDRMS +
-           R_FULL_BTH + R_HALF_BTH + R_KITCH + R_HEAT_TYP + R_AC +
+           OWN_OCC_CLEAN + NUM_FLOORS_CLEAN +
+           R_TOTAL_RMS + R_BDRMS +
+           R_FULL_BTH + R_HALF_BTH + R_KITCH + 
            R_FPLACE + 
            
            S_NUM_BLDG + 
