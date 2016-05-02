@@ -53,8 +53,10 @@ bostondata$NUM_FLOORS_CLEAN = factor(bostondata$NUM_FLOORS, levels=c('1','1.5','
 bostondata = within(bostondata, rm(NUM_FLOORS))
 
 bostondata$LAND_SF[bostondata$LAND_SF == 0| bostondata$LAND_SF > 10000000] = NA
-bostondata$YR_BUILT[bostondata$YR_BUILT < 1000 | bostondata$YR_BUILT == 0 | bostondata$YR_BUILT>2014] = NA
-bostondata$YR_REMOD[bostondata$YR_REMOD < 1000 | bostondata$YR_REMOD == 0 | bostondata$YR_REMOD>2014] =NA
+bostondata$YR_BUILT[bostondata$YR_BUILT < 1000 | bostondata$YR_BUILT == 0 | bostondata$YR_BUILT>2014] = 2000
+bostondata$YR_REMOD[bostondata$YR_REMOD < 1000 | bostondata$YR_REMOD == 0 | bostondata$YR_REMOD>2014] = 2000
+
+# THIS BREAKS EVERYTHING
 bostondata = na.omit(bostondata)
 
 # Clean up ST_NUM
