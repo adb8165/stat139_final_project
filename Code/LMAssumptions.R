@@ -325,6 +325,29 @@ plot(fitted(fit4),rstudent(fit4),xlab ="Fitted Values",ylab="Standardized Residu
 #Check normality of residuals
 qqPlot(fit4, main="QQ Plot")
 
+# Exploratory Data Analysis
+# How does year built/ number of rooms, year remodeled affect the assessement value?
+
+fit_built=lm(AV_TOTAL~YR_BUILT,data=dataclean2)
+summary(fit_built)
+plot(dataclean2$YR_BUILT,dataclean2$AV_TOTAL,ylim=c(0,8000000))
+lines(coef(fit_built)[1]+dataclean2$YR_BUILT*coef(fit_built)[2],col="red")
+
+fit_remod=lm(AV_TOTAL~YR_REMOD,data=dataclean2)
+summary(fit_remod)
+plot(fit_remod)
+plot(dataclean2$YR_REMOD,dataclean2$AV_TOTAL,ylim=c(0,8000000))
+lines(coef(fit_remod)[1]+dataclean2$YR_REMOD*coef(fit_remod)[2],col="red")
+
+fit_both=lm(AV_TOTAL~YR_BUILT+YR_REMOD,data=dataclean2)
+summary(fit_both)
+
+fit_room=lm(AV_TOTAL~U_BDRMS,data=dataclean2)
+summary(fit_room)
+
+fit_three=lm(AV_TOTAL~YR_BUILT+YR_REMOD+U_BDRMS,data=dataclean2)
+summary(fit_three)
+
 # Nonlinearity
 # Use Ramsey RESET Test
 data.test = dataclean2
@@ -398,3 +421,6 @@ ad.test(fitted(fit6))
 
 # Stepwise: we actually can't remove any predictors because some of the factor levels are significant for each categorical
 # variable.  We can only remove the whole variable, which we shouldn't do
+
+
+
