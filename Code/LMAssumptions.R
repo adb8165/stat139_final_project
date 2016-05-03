@@ -7,7 +7,7 @@ library(e1071)
 library(nnet)
 
 # Import the data
-bostondata = read.csv("/Users/Avery/Dropbox/Harvard/Stat139/stat139_final_project/Data/Property_Assessment_2014.csv",header = T)
+bostondata = read.csv("../Data/Property_Assessment_2014.csv",header = T)
 
 # CLEANING
 # Remove unused variables
@@ -44,8 +44,8 @@ bostondata = within(bostondata, rm(U_ORIENT))
 #bostondata$R_EXT_FIN_CLEAN = factor(bostondata$R_EXT_FIN,levels=c('M', 'W','B','F','A','P','S', 'NA'), exclude = NA)
 #summary(bostondata$R_EXT_FIN_CLEAN)
 #bostondata = within(bostondata, rm(R_EXT_FIN))
-
-bostondata$PTYPE_CLEAN = factor(bostondata$PTYPE,levels=c(102,101,104,105,995,132,111,985,108,902,13,112,390,130,106,125,357,31,986,358,907,319,320337,905,977,908,332))
+unique(bostondata$PTYPE)
+bostondata$PTYPE_CLEAN = factor(bostondata$PTYPE,levels=c(102,101,104,105,995,132,111,985,108,902,13,112,390,130,106,125,357,31,986,358,907,319,320,337,905,977,908,332))
 bostondata = within(bostondata, rm(PTYPE))
 
 bostondata$OWN_OCC_CLEAN = factor(bostondata$OWN_OCC, levels = c("Y","N"))
@@ -191,7 +191,7 @@ bostondata = na.omit(bostondata)
 #names(bostondata)
 #sort(table(bostondata$YR_BUILT))
 
-summary(lm(AV_TOTAL ~  STRUCTURE_CLASS_CLEAN , data=bostondata))
+#summary(lm(AV_TOTAL ~  STRUCTURE_CLASS_CLEAN , data=bostondata))
 
 # Rows that break the model :(
 # STRUCTURE_CLASS_CLEAN + R_BLDG_STYL_CLEAN + R_ROOF_TYP_CLEAN +R_EXT_FIN_CLEAN +
@@ -245,8 +245,156 @@ fit3 = lm(AV_TOTAL ~ LU_CLEAN + PTYPE_CLEAN +
          data=bostondata)
 summary(fit3)
 
-
-
-
 # Basic assumption tests
 vif(fit3)
+# BREAKS due to multicolinearity
+
+dataclean1 = newdata <- subset(bostondata, select=c(AV_TOTAL,
+                                                    LU_CLEAN,GROSS_AREA,LIVING_AREA,LAND_SF,YR_BUILT,YR_REMOD,
+                                                    OWN_OCC_CLEAN, NUM_FLOORS_CLEAN, 
+                                                    ST_NUM_15, ST_NUM_1, ST_NUM_10, ST_NUM_9, ST_NUM_2,
+                                                    ST_NUM_11, ST_NUM_8, ST_NUM_6, ST_NUM_7, ST_NUM_12, ST_NUM_5, ST_NUM_19,
+                                                    ST_NUM_21, ST_NUM_20, ST_NUM_16,
+                                                    UNIT_NUM_1, UNIT_NUM_2, UNIT_NUM_3, UNIT_NUM_4, UNIT_NUM_5,
+                                                    UNIT_NUM_6, UNIT_NUM_7, UNIT_NUM_8, UNIT_NUM_9,
+                                                    ST_NAME_SUF_AV, ST_NAME_SUF_BL, ST_NAME_SUF_CI, ST_NAME_SUF_CT, ST_NAME_SUF_DR,
+                                                    ST_NAME_SUF_HW, ST_NAME_SUF_LA, ST_NAME_SUF_PK, ST_NAME_SUF_PL, ST_NAME_SUF_PW,
+                                                    ST_NAME_SUF_RD, ST_NAME_SUF_SQ, ST_NAME_SUF_ST, ST_NAME_SUF_TE, ST_NAME_SUF_WY, 
+                                                    
+                                                    ZIPCODE_02115, ZIPCODE_02114, ZIPCODE_02215, ZIPCODE_02134, ZIPCODE_02125,
+                                                    ZIPCODE_02111, ZIPCODE_02131, ZIPCODE_02124, ZIPCODE_02128, ZIPCODE_02109,
+                                                    ZIPCODE_02122, ZIPCODE_02113, ZIPCODE_02132, ZIPCODE_02110, ZIPCODE_02108,
+                                                    ZIPCODE_02119, ZIPCODE_02467,
+                                                    
+                                                    ST_NAME_COMMONWEALTH, ST_NAME_BEACON, ST_NAME_WASHINGTON, ST_NAME_TREMONT,
+                                                    ST_NAME_DORCHESTER, ST_NAME_MARLBOROUGH, ST_NAME_CENTRE, ST_NAME_PARK,
+                                                    ST_NAME_HAWTHORNE, ST_NAME_MASSACHUSETTS, ST_NAME_COLUMBUS, ST_NAME_ADAMS,
+                                                    ST_NAME_HYDE_PARK, ST_NAME_BOYLSTON, ST_NAME_COMMERCIAL, ST_NAME_NEWBURY,
+                                                    ST_NAME_SOUTH, ST_NAME_HARVARD, ST_NAME_MT_VERNON, ST_NAME_CHESTNUT,
+                                                    ST_NAME_RIVER, ST_NAME_E_INDIA, ST_NAME_SARATOGA, ST_NAME_EIGHTH, ST_NAME_WARREN,
+                                                    ST_NAME_BLUE_HILL, ST_NAME_HARRISON, ST_NAME_HUNTINGTON, ST_NAME_SHAWMUT, 
+                                                    ST_NAME_E_BROADWAY, ST_NAME_WHITTIER, ST_NAME_BENNINGTON,
+                                                    U_BDRMS, U_FPLACE, U_HALF_BTH, U_FULL_BTH, U_TOT_RMS, U_CORNER_CLEAN,
+                                                    U_ORIENT_CLEAN, U_BASE_FLOOR,
+                                                    U_HEAT_TYP_W, U_HEAT_TYP_F, U_HEAT_TYP_E, U_HEAT_TYP_P))
+
+# R_TOTAL_RMS + R_BDRMS + R_FULL_BTH + R_HALF_BTH + R_KITCH + R_FPLACE + S_NUM_BLDG + PTYPE_CLEAN - PTYPE_CLEAN908
+
+# Multicolinearity Test
+fit2 = lm(AV_TOTAL ~., data=dataclean1)
+summary(fit2)
+vif(fit2)
+
+# Iteratively Remove variables with high vif scores
+dataclean2 = dataclean1
+dataclean2$U_HEAT_TYP_W <- NULL
+fit3 = lm(AV_TOTAL ~., data=dataclean2)
+vif(fit3)
+
+dataclean2$GROSS_AREA <- NULL
+fit3 = lm(AV_TOTAL ~., data=dataclean2)
+vif(fit3)
+
+dataclean2$LIVING_AREA <- NULL
+fit3 = lm(AV_TOTAL ~., data=dataclean2)
+vif(fit3)
+
+dataclean2$ST_NAME_SUF_ST <- NULL
+fit3 = lm(AV_TOTAL~., data=dataclean2)
+vif(fit3)
+
+summary(fit3)
+e=residuals(fit3)
+studentized_res=rstudent(fit3)
+#Plot residuals
+plot(yhat,e,xlab ="Fitted Values",ylab="Residuals")
+# Plot standardized residuals
+plot(yhat,studentized_res,xlab ="Fitted Values",ylab="Standardized Residuals")
+# standardized resids are not between -2 and 2
+# There is also obvious heteroskedasticity (cone shape residuals)
+# confirm heteroskedasticity
+ncvTest(fit3) # pval is 0, definitely heteroskedasticity
+# log the Y's
+fit4 = lm(log(AV_TOTAL)~., data=dataclean2)
+summary(fit4)
+# The residual plot looks much better, but there is still a nonlinear trend
+plot(fitted(fit4),rstudent(fit4),xlab ="Fitted Values",ylab="Standardized Residuals")
+
+
+# Non-normality
+#Check normality of residuals
+qqPlot(fit4, main="QQ Plot")
+
+# Nonlinearity
+# Use Ramsey RESET Test
+data.test = dataclean2
+yhat = fitted(fit4)
+yhat2 = array(yhat)^2
+data.test$yhat2 = yhat2
+yhat3 = array(yhat)^3
+data.test$yhat3 = yhat3
+fit.ramseytest = lm(AV_TOTAL~.,data=data.test)
+linearHypothesis(fit.ramseytest,c("yhat2=0","yhat3=0"))
+ # p-value= 2.2e-16 < .05 so there are nonlinearities
+
+# plot predictor variables vs dependent variable to get idea
+# of appropriate predictor variable transformations
+quant_var_idxs = c(1,3,4,5,95:99)
+par(mfrow=c(2,4))
+plot(dataclean2$LAND_SF,dataclean2$AV_TOTAL)
+plot(dataclean2$YR_BUILT,dataclean2$AV_TOTAL)
+plot(dataclean2$YR_REMOD,dataclean2$AV_TOTAL)
+plot(dataclean2$U_BDRMS,dataclean2$AV_TOTAL)
+plot(dataclean2$U_FPLACE,dataclean2$AV_TOTAL)
+plot(dataclean2$U_HALF_BTH,dataclean2$AV_TOTAL)
+plot(dataclean2$U_FULL_BTH,dataclean2$AV_TOTAL)
+plot(dataclean2$U_TOT_RMS,dataclean2$AV_TOTAL)
+
+#try using a square transformation of yr_remod
+#try using a cubic for yr_built
+# use log for land_sf
+dataclean3 = dataclean2
+dataclean3$YR_REMOD2 = dataclean2$YR_REMOD^2
+dataclean3$YR_REMOD <- NULL
+dataclean3$YR_BUILT3 = dataclean2$YR_BUILT^3
+dataclean3$YR_BUILT <- NULL
+dataclean3$LAND_SF_LOG = log(dataclean2$LAND_SF)
+dataclean3$LAND_SF <- NULL
+dataclean3$AV_TOTAL_LOG = log(dataclean2$AV_TOTAL)
+dataclean3$AV_TOTAL <- NULL
+fit5 = lm(AV_TOTAL_LOG~.,data=dataclean3)
+summary(fit5)
+#plot residuals
+par(mfrow=c(1,1))
+plot(fitted(fit5),rstudent(fit5),xlab ="Fitted Values",ylab="Standardized Residuals")
+# finally a good looking residuals plot
+
+#residual vs leverage plot
+plot(fit5,which=5)
+influencePlot(fit5)
+
+
+#Cook's D: check for influential points
+plot(fit5, which=4)
+
+# There are definitely influential points
+# three of note: 67467,133906,124532
+
+dataclean3[cooks.distance(fit5) > .02,]
+#67467 and 133906 have more rooms than U_TOT_RMS, so discard them
+influential_points = cooks.distance(fit5) > .04
+dataclean3 = dataclean3[!influential_points,]
+fit6 = lm(AV_TOTAL_LOG~.,data=dataclean3)
+#new cooks d
+plot(fit6, which=4)
+summary(fit6)
+
+library(nortest)
+#Check normality of data
+ad.test(fitted(fit6))
+# Not Normal, p-val = 2.2e-16
+# Note: the presence of outliers can distort the results of the normality test.
+# often useful to log tranform the dependent variable, which we already did
+
+# Stepwise: we actually can't remove any predictors because some of the factor levels are significant for each categorical
+# variable.  We can only remove the whole variable, which we shouldn't do
