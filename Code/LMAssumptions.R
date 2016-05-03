@@ -59,7 +59,7 @@ bostondata = within(bostondata, rm(NUM_FLOORS))
 
 bostondata$LAND_SF[bostondata$LAND_SF == 0| bostondata$LAND_SF > 10000000] = NA
 bostondata$YR_BUILT[bostondata$YR_BUILT < 1000 | bostondata$YR_BUILT == 0 | bostondata$YR_BUILT>2014] = NA
-bostondata$YR_REMOD[bostondata$YR_REMOD < 1000 | bostondata$YR_REMOD == 0 | bostondata$YR_REMOD>2014] = NA
+bostondata$YR_REMOD[bostondata$YR_REMOD < 1000 | bostondata$YR_REMOD == 0 | bostondata$YR_REMOD>2014] = 1994
 
 bostondata = na.omit(bostondata)
 lengths(bostondata)
@@ -191,11 +191,13 @@ bostondata = na.omit(bostondata)
 #names(bostondata)
 #sort(table(bostondata$YR_BUILT))
 
-summary(lm(AV_TOTAL ~  R_HEAT_TYP , data=bostondata))
+summary(lm(AV_TOTAL ~  STRUCTURE_CLASS_CLEAN , data=bostondata))
 
 # Rows that break the model :(
 # STRUCTURE_CLASS_CLEAN + R_BLDG_STYL_CLEAN + R_ROOF_TYP_CLEAN +R_EXT_FIN_CLEAN +
 # R_HEAT_TYP + R_AC +
+
+lengths(bostondata)
 
 fit3 = lm(AV_TOTAL ~ LU_CLEAN + PTYPE_CLEAN +
            GROSS_AREA + LIVING_AREA + LAND_SF +
@@ -242,3 +244,9 @@ fit3 = lm(AV_TOTAL ~ LU_CLEAN + PTYPE_CLEAN +
            U_HEAT_TYP_W + U_HEAT_TYP_F + U_HEAT_TYP_E + U_HEAT_TYP_P, 
          data=bostondata)
 summary(fit3)
+
+
+
+
+# Basic assumption tests
+vif(fit3)
