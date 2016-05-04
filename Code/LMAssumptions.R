@@ -13,9 +13,10 @@ library(MASS)
 library(caret)
 library(pROC)
 
-
 # Import the data
-bostondata = read.csv("../Data/Property_Assessment_2014.csv",header = T)
+#bostondata = read.csv("../Data/Property_Assessment_2014.csv",header = T)
+bostondata1 = read.csv("/Users/Avery/Dropbox/Harvard/Stat139/stat139_final_project/Data/Property_Assessment_2014.csv",header = T)
+bostondata = bostondata1
 
 # CLEANING
 # Remove unused variables
@@ -204,8 +205,6 @@ bostondata = na.omit(bostondata)
 # Rows that break the model :(
 # STRUCTURE_CLASS_CLEAN + R_BLDG_STYL_CLEAN + R_ROOF_TYP_CLEAN +R_EXT_FIN_CLEAN +
 # R_HEAT_TYP + R_AC +
-
-lengths(bostondata)
 
 fit3 = lm(AV_TOTAL ~ LU_CLEAN + PTYPE_CLEAN +
            GROSS_AREA + LIVING_AREA + LAND_SF +
@@ -404,7 +403,6 @@ plot(fitted(fit5),rstudent(fit5),xlab ="Fitted Values",ylab="Standardized Residu
 plot(fit5,which=5)
 influencePlot(fit5)
 
-
 #Cook's D: check for influential points
 plot(fit5, which=4)
 
@@ -420,7 +418,6 @@ fit6 = lm(AV_TOTAL_LOG~.,data=dataclean3)
 plot(fit6, which=4)
 summary(fit6)
 
-library(nortest)
 #Check normality of data
 ad.test(fitted(fit6))
 # Not Normal, p-val = 2.2e-16
@@ -482,14 +479,11 @@ dataclean4=subset(dataclean3,select=c(AV_TOTAL_LOG, LU_CLEAN,OWN_OCC_CLEAN , NUM
                                       YR_BUILT3 , LAND_SF_LOG))
                   
                   
-##divide data into train set(70%) and test set(30%)
+## Divide data into train set(70%) and test set(30%)
 set.seed(123)
 divide = sample(1:2, dim(dataclean4)[1], replace = T, prob = c(0.7, 0.3))
 trainset = dataclean4[divide == 1,]
 testset = dataclean4[divide == 2,]
-dim(trainset)
-dim(testset)
-
 
 ####################  linear model  ######################
 lm = lm(AV_TOTAL_LOG~.,data=trainset)
@@ -509,10 +503,9 @@ rmse(actual, pre)
 # (LU_CLEAN*U_TOT_RMS) + (LU_CLEAN*U_BDRMS) + (LAND_SF_LOG*YR_BUILT3)
 # +(YR_REMOD2*YR_BUILT3)+(LAND_SF_LOG*YR_REMOD2)+I(U_FULL_BTH^2)+I(YR_REMOD2^2)
 # +I(YR_BUILT3^2)+I(U_BASE_FLOOR^4)+(U_BDRMS*U_BASE_FLOOR)
-lm = lm(AV_TOTAL_LOG~.*.,data=trainset)
-+(LU_CLEAN*LAND_SF_LOG)+(U_ORIENT_CLEAN*YR_BUILT3)
-+I(U_BASE_FLOOR^2)+I(U_BASE_FLOOR^3)+(LAND_SF_LOG*U_BASE_FLOOR)
-,data=trainset)
+lm = lm(AV_TOTAL_LOG~.+(LU_CLEAN*LAND_SF_LOG)+(U_ORIENT_CLEAN*YR_BUILT3)
+    +I(U_BASE_FLOOR^2)+I(U_BASE_FLOOR^3)+(LAND_SF_LOG*U_BASE_FLOOR)
+  ,data=trainset)
 summary(lm)
 prelm = predict(lm, testset[2:96])
 #qplot(prelm,testset[,1])
@@ -561,11 +554,14 @@ results = clusterApply(cl,2^(0:3), parasvm)
 results
 
 ######################  random forest  ###########################
-rf = randomForest(AV_TOTAL_LOG.,data=trainset)
-prerf = predict(rf,testset[,2:7])
-RMSE(prerf,testset[,1])
-
-
+rf = randomForest(AV_TOTAL_LOG~.+(LU_CLEAN*LAND_SF_LOG)+(U_ORIENT_CLEAN*YR_BUILT3)
+                  +I(U_BASE_FLOOR^2)+I(U_BASE_FLOOR^3)+(LAND_SF_LOG*U_BASE_FLOOR)
+                  ,ntrees=200,data=trainset[0:5000,])
+prerf = predict(rf,testset[,2:96])
+#qplot(prelm,testset[,1])
+# Now exponentiate
+pre = exp(prerf)
+rmse(actual, pre)
 
 ######################### Gradient Boosted Models ################################
 
