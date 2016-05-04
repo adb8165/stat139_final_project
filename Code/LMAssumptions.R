@@ -557,7 +557,7 @@ results
 ######################  random forest  ###########################
 rf = randomForest(AV_TOTAL_LOG~.+(LU_CLEAN*LAND_SF_LOG)+(U_ORIENT_CLEAN*YR_BUILT3)
                   +I(U_BASE_FLOOR^2)+I(U_BASE_FLOOR^3)+(LAND_SF_LOG*U_BASE_FLOOR)
-                  ,ntrees=200,data=trainset[0:5000,])
+                  ,ntrees=200,data=trainset[0:10000,])
 prerf = predict(rf,testset[,2:96])
 #qplot(prelm,testset[,1])
 # Now exponentiate
@@ -575,21 +575,22 @@ rmse(actual, pre)
 # preprocessing.vals are the means and stds of the training data
 
 # Turn boolean vectors into numerical vectors
-factor.indices = c(1,2,3,89)
+#factor.indices = c(1,2,3,89)
 for(i in c(4:88,90:96)){
   trainset[,i] = as.numeric(trainset[,i])
+  testset[,i] = as.numeric(testset[,i])
 }
 preprocessing.vals <- preProcess(trainset[,2:96], method = c("center", "scale"))
 # standardize the training data
 train.predictors.standardized <- predict(preprocessing.vals, trainset[,2:96])
 # standardize the test data
 test.predictors.standardized <- predict(preprocessing.vals, testset[,2:96])
-test.predictors.standardized[0:10,]
+
 # it is best to pass the predictor variables as a dataframe, and the response variable as a separate df or vector
 # tuneLength sets the number of values of each hyperparameter to tune
 #change tuneLength to adjust number values to try for each parameter
 # there are two parameters for tuneLength = 3 searches a grid of 9 values
-model.gbm <- train(train.predictors.standardized[0:10,], trainset[0:10,1], method='gbm', 
+model.gbm <- train(train.predictors.standardized[1:10,], trainset[1:10,1], method='gbm', 
                    trControl=trainControl(method='cv'),tuneLength=2)
 preds = predict.train(model.gbm , newdata = test.predictors.standardized)
 pre = exp(prerf)
