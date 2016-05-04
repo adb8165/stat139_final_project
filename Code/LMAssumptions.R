@@ -12,6 +12,7 @@ library(Metrics)
 library(MASS)
 library(caret)
 library(pROC)
+library(gbm)
 
 # Import the data
 #bostondata = read.csv("../Data/Property_Assessment_2014.csv",header = T)
@@ -582,14 +583,17 @@ preprocessing.vals <- preProcess(trainset[,2:96], method = c("center", "scale"))
 # standardize the training data
 train.predictors.standardized <- predict(preprocessing.vals, trainset[,2:96])
 # standardize the test data
-test.predictors.standardized <- predict(preprocessing.vals, testset)
+test.predictors.standardized <- predict(preprocessing.vals, testset[,2:96])
+test.predictors.standardized[0:10,]
 # it is best to pass the predictor variables as a dataframe, and the response variable as a separate df or vector
 # tuneLength sets the number of values of each hyperparameter to tune
 #change tuneLength to adjust number values to try for each parameter
 # there are two parameters for tuneLength = 3 searches a grid of 9 values
-model.gbm <- train(train.predictors.standardized, trainset[,1], method='gbm', 
+model.gbm <- train(train.predictors.standardized[0:10,], trainset[0:10,1], method='gbm', 
                    trControl=trainControl(method='cv'),tuneLength=2)
-model.gbm
+preds = predict.train(model.gbm , newdata = test.predictors.standardized)
+pre = exp(prerf)
+rmse(actual, pre)
 
 
 ########################### Neural Networks ########################################
