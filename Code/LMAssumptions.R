@@ -5,6 +5,14 @@ library(boot)
 library(rpart)
 library(e1071)
 library(nnet)
+library(parallel)
+library(randomForest)
+library(neuralnet)
+library(Metrics)
+library(MASS)
+library(caret)
+library(pROC)
+
 
 # Import the data
 bostondata = read.csv("../Data/Property_Assessment_2014.csv",header = T)
@@ -419,8 +427,174 @@ ad.test(fitted(fit6))
 # Note: the presence of outliers can distort the results of the normality test.
 # often useful to log tranform the dependent variable, which we already did
 
-# Stepwise: we actually can't remove any predictors because some of the factor levels are significant for each categorical
-# variable.  We can only remove the whole variable, which we shouldn't do
+# Stepwise Regression
+step <- stepAIC(fit6, direction="both")
+step$anova # display results
+
+fit7=lm(formula = AV_TOTAL_LOG ~ LU_CLEAN + OWN_OCC_CLEAN + NUM_FLOORS_CLEAN + 
+          ST_NUM_15 + ST_NUM_1 + ST_NUM_10 + ST_NUM_9 + ST_NUM_2 + 
+          ST_NUM_7 + ST_NUM_12 + ST_NUM_5 + ST_NUM_19 + ST_NUM_21 + 
+          ST_NUM_20+ ST_NUM_16 + UNIT_NUM_1 + UNIT_NUM_2 + UNIT_NUM_3 + 
+          UNIT_NUM_4 + UNIT_NUM_5 + UNIT_NUM_6 + ST_NAME_SUF_AV + ST_NAME_SUF_BL + 
+          ST_NAME_SUF_CI + ST_NAME_SUF_CT + ST_NAME_SUF_DR + ST_NAME_SUF_HW + 
+          ST_NAME_SUF_LA + ST_NAME_SUF_PK + ST_NAME_SUF_PL + ST_NAME_SUF_PW + 
+          ST_NAME_SUF_RD + ST_NAME_SUF_SQ + ST_NAME_SUF_TE + ST_NAME_SUF_WY + 
+          ZIPCODE_02115 + ZIPCODE_02114 + ZIPCODE_02215 + ZIPCODE_02134 + 
+          ZIPCODE_02125 + ZIPCODE_02131 + ZIPCODE_02124 + ZIPCODE_02128 + 
+          ZIPCODE_02109 + ZIPCODE_02122 + ZIPCODE_02113 + ZIPCODE_02132 + 
+          ZIPCODE_02110 + ZIPCODE_02108 + ZIPCODE_02119 + ZIPCODE_02467 + 
+          ST_NAME_COMMONWEALTH + ST_NAME_BEACON + ST_NAME_WASHINGTON + 
+          ST_NAME_TREMONT + ST_NAME_DORCHESTER + ST_NAME_MARLBOROUGH + 
+          ST_NAME_CENTRE + ST_NAME_PARK + ST_NAME_HAWTHORNE + ST_NAME_MASSACHUSETTS + 
+          ST_NAME_COLUMBUS + ST_NAME_ADAMS + ST_NAME_HYDE_PARK + ST_NAME_BOYLSTON + 
+          ST_NAME_COMMERCIAL + ST_NAME_NEWBURY + ST_NAME_SOUTH + ST_NAME_MT_VERNON + 
+          ST_NAME_CHESTNUT + ST_NAME_RIVER + ST_NAME_E_INDIA + ST_NAME_EIGHTH + 
+          ST_NAME_WARREN + ST_NAME_BLUE_HILL + ST_NAME_HARRISON + ST_NAME_HUNTINGTON + 
+          ST_NAME_SHAWMUT + ST_NAME_E_BROADWAY + ST_NAME_WHITTIER + 
+          ST_NAME_BENNINGTON + U_BDRMS + U_FPLACE + U_HALF_BTH + U_FULL_BTH + 
+          U_TOT_RMS + U_CORNER_CLEAN + U_ORIENT_CLEAN + U_BASE_FLOOR + 
+          U_HEAT_TYP_F + U_HEAT_TYP_E + U_HEAT_TYP_P + YR_REMOD2 + 
+          YR_BUILT3 + LAND_SF_LOG, data = dataclean3)
+
+dataclean4=subset(dataclean3,select=c(AV_TOTAL_LOG, LU_CLEAN,OWN_OCC_CLEAN , NUM_FLOORS_CLEAN , 
+                                      ST_NUM_15 , ST_NUM_1 , ST_NUM_10 , ST_NUM_9 , ST_NUM_2 , 
+                                      ST_NUM_7 , ST_NUM_12 , ST_NUM_5 , ST_NUM_19 , ST_NUM_21 , 
+                                      ST_NUM_20, ST_NUM_16 , UNIT_NUM_1 , UNIT_NUM_2 , UNIT_NUM_3 , 
+                                      UNIT_NUM_4 , UNIT_NUM_5 , UNIT_NUM_6 , ST_NAME_SUF_AV , ST_NAME_SUF_BL , 
+                                      ST_NAME_SUF_CI , ST_NAME_SUF_CT , ST_NAME_SUF_DR , ST_NAME_SUF_HW , 
+                                      ST_NAME_SUF_LA , ST_NAME_SUF_PK , ST_NAME_SUF_PL , ST_NAME_SUF_PW , 
+                                      ST_NAME_SUF_RD , ST_NAME_SUF_SQ , ST_NAME_SUF_TE , ST_NAME_SUF_WY , 
+                                      ZIPCODE_02115 , ZIPCODE_02114 , ZIPCODE_02215 , ZIPCODE_02134 , 
+                                      ZIPCODE_02125 , ZIPCODE_02131 , ZIPCODE_02124 , ZIPCODE_02128 , 
+                                      ZIPCODE_02109 , ZIPCODE_02122 , ZIPCODE_02113 , ZIPCODE_02132 , 
+                                      ZIPCODE_02110 , ZIPCODE_02108 , ZIPCODE_02119 , ZIPCODE_02467 , 
+                                      ST_NAME_COMMONWEALTH , ST_NAME_BEACON , ST_NAME_WASHINGTON , 
+                                      ST_NAME_TREMONT , ST_NAME_DORCHESTER , ST_NAME_MARLBOROUGH , 
+                                      ST_NAME_CENTRE , ST_NAME_PARK , ST_NAME_HAWTHORNE , ST_NAME_MASSACHUSETTS , 
+                                      ST_NAME_COLUMBUS , ST_NAME_ADAMS , ST_NAME_HYDE_PARK , ST_NAME_BOYLSTON , 
+                                      ST_NAME_COMMERCIAL , ST_NAME_NEWBURY , ST_NAME_SOUTH , ST_NAME_MT_VERNON , 
+                                      ST_NAME_CHESTNUT , ST_NAME_RIVER , ST_NAME_E_INDIA , ST_NAME_EIGHTH , 
+                                      ST_NAME_WARREN , ST_NAME_BLUE_HILL , ST_NAME_HARRISON , ST_NAME_HUNTINGTON , 
+                                      ST_NAME_SHAWMUT , ST_NAME_E_BROADWAY , ST_NAME_WHITTIER , 
+                                      ST_NAME_BENNINGTON , U_BDRMS , U_FPLACE , U_HALF_BTH , U_FULL_BTH , 
+                                      U_TOT_RMS , U_CORNER_CLEAN , U_ORIENT_CLEAN , U_BASE_FLOOR , 
+                                      U_HEAT_TYP_F , U_HEAT_TYP_E , U_HEAT_TYP_P , YR_REMOD2 , 
+                                      YR_BUILT3 , LAND_SF_LOG))
+                  
+                  
+##divide data into train set(70%) and test set(30%)
+set.seed(123)
+divide = sample(1:2, dim(dataclean4)[1], replace = T, prob = c(0.7, 0.3))
+trainset = dataclean4[divide == 1,]
+testset = dataclean4[divide == 2,]
+dim(trainset)
+dim(testset)
+
+
+####################  linear model  ######################
+lm = lm(AV_TOTAL_LOG~.,data=trainset)
+summary(lm)
+
+prelm = predict(lm, testset[2:96])
+qplot(prelm,testset[,1])
+
+# Now exponentiate
+pre = exp(prelm)
+actual = exp(testset[,1])
+
+rmse(actual, pre)
+
+# Add interaction terms
+# Unused terms
+# (LU_CLEAN*U_TOT_RMS) + (LU_CLEAN*U_BDRMS) + (LAND_SF_LOG*YR_BUILT3)
+# +(YR_REMOD2*YR_BUILT3)+(LAND_SF_LOG*YR_REMOD2)+I(U_FULL_BTH^2)+I(YR_REMOD2^2)
+# +I(YR_BUILT3^2)+I(U_BASE_FLOOR^4)+(U_BDRMS*U_BASE_FLOOR)
+lm = lm(AV_TOTAL_LOG~.*.,data=trainset)
++(LU_CLEAN*LAND_SF_LOG)+(U_ORIENT_CLEAN*YR_BUILT3)
++I(U_BASE_FLOOR^2)+I(U_BASE_FLOOR^3)+(LAND_SF_LOG*U_BASE_FLOOR)
+,data=trainset)
+summary(lm)
+prelm = predict(lm, testset[2:96])
+#qplot(prelm,testset[,1])
+# Now exponentiate
+pre = exp(prelm)
+actual = exp(testset[,1])
+rmse(actual, pre)
+# 235846
+# 235275.2
+# 231598.1
+# 231353.5
+# 223862
+
+################################# cross validation ########################################
+cvglm = cv.g
+
+lm(trainset,glm)
+cvglm$delta
+
+
+#######################  decision tree  ###########################
+rpart = rpart(AV_TOTAL_LOG~.,data=trainset)
+rpart.plot(rpart)
+printcp(rpart)
+
+prerpart = predict(rpart,testset[,2:96])
+pre2=exp(prerpart)
+rmse(pre2,actual)
+
+#######################   SVM   ##################################
+svm = svm(AV_TOTAL_LOG~.,data=trainset, type="nu-regression")
+
+# tunesvm=tune.svm(AV_TOTAL~.,data=trainset, cost = 2^(0:4))   too slow
+# parallel computing
+
+parasvm = function(cost){
+  library(e1071)
+  svm = svm(AV_TOTAL~.,data=trainset, type="nu-regression", cost=cost)
+  presvm = predict(svm,testset[,2:7])
+  RMSE(presvm,testset[,1])
+}
+
+cl = makeCluster(4)      #set CPU cores cluster
+clusterExport(cl,c("trainset","testset","RMSE"))
+results = clusterApply(cl,2^(0:3), parasvm)
+results
+
+######################  random forest  ###########################
+rf = randomForest(AV_TOTAL_LOG.,data=trainset)
+prerf = predict(rf,testset[,2:7])
+RMSE(prerf,testset[,1])
 
 
 
+######################### Gradient Boosted Models ################################
+
+# Now preprocess (standardize and center training data)
+# standarizing data is required for neural nets and a can't hurt gbms
+# note: only need to standardize quantitative variables
+# if there are categorical, create mask to grab only the quantitative
+#columns
+# Note we omit the response variable from the training data
+# preprocessing.vals are the means and stds of the training data
+trainset2=as.data.frame.matrix(trainset) 
+testset2=as.data.frame.matrix(testset) 
+
+preprocessing.vals <- preProcess(trainset2[,2:96], method = c("center", "scale"))
+# standardize the training data
+train.predictors.standardized <- predict(preprocessing.vals, trainset2[,2:96])
+# standardize the test data
+test.predictors.standardized <- predict(preprocessing.vals, testset2)
+# it is best to pass the predictor variables as a dataframe, and the response variable as a separate df or vector
+# tuneLength sets the number of values of each hyperparameter to tune
+model.gbm <- train(train.predictors.standardized, trainset2[,1], method='gbm', 
+                   trControl=trainControl(method='cv'),tuneLength=4)
+model.gbm
+
+
+########################### Neural Networks ########################################
+nn <- train(train.predictors.standardized, train[,1], method='nnet', 
+            trControl=trainControl(method='cv'),tuneLength=4)
+
+# Note for neural nets use the predict.train command
+#Predict on test set
+preds = predict.train(nn, newdata = test.predictors.standardized)
