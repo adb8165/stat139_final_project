@@ -572,34 +572,28 @@ rmse(actual, pre)
 #columns
 # Note we omit the response variable from the training data
 # preprocessing.vals are the means and stds of the training data
-trainset2=as.data.frame.matrix(trainset) 
-testset2=as.data.frame.matrix(testset) 
 
+# Turn boolean vectors into numerical vectors
 factor.indices = c(1,2,3,89)
 for(i in c(4:88,90:96)){
-  trainset2[,i] = as.numeric(trainset2[,i])
+  trainset[,i] = as.numeric(trainset[,i])
 }
-
-factor.indices = c(1,2,3,89)
-for(i in c(4:88,90:96)){
-  testset2[,i] = as.numeric(testset2[,i])
-}
-
-
-preprocessing.vals <- preProcess(trainset2[,2:96], method = c("center", "scale"))
+preprocessing.vals <- preProcess(trainset[,2:96], method = c("center", "scale"))
 # standardize the training data
-train.predictors.standardized <- predict(preprocessing.vals, trainset2[,2:96])
+train.predictors.standardized <- predict(preprocessing.vals, trainset[,2:96])
 # standardize the test data
-test.predictors.standardized <- predict(preprocessing.vals, testset2)
+test.predictors.standardized <- predict(preprocessing.vals, testset)
 # it is best to pass the predictor variables as a dataframe, and the response variable as a separate df or vector
 # tuneLength sets the number of values of each hyperparameter to tune
-model.gbm <- train(train.predictors.standardized, trainset2[,1], method='gbm', 
-                   trControl=trainControl(method='cv'),tuneLength=4)
+#change tuneLength to adjust number values to try for each parameter
+# there are two parameters for tuneLength = 3 searches a grid of 9 values
+model.gbm <- train(train.predictors.standardized, trainset[,1], method='gbm', 
+                   trControl=trainControl(method='cv'),tuneLength=2)
 model.gbm
 
 
 ########################### Neural Networks ########################################
-nn <- train(train.predictors.standardized, trainset2[,1], method='nnet', 
+nn <- train(train.predictors.standardized, train[,1], method='nnet', 
             trControl=trainControl(method='cv'),tuneLength=4)
 
 # Note for neural nets use the predict.train command
