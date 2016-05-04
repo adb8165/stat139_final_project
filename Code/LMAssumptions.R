@@ -579,6 +579,17 @@ RMSE(prerf,testset[,1])
 trainset2=as.data.frame.matrix(trainset) 
 testset2=as.data.frame.matrix(testset) 
 
+factor.indices = c(1,2,3,89)
+for(i in c(4:88,90:96)){
+  trainset2[,i] = as.numeric(trainset2[,i])
+}
+
+factor.indices = c(1,2,3,89)
+for(i in c(4:88,90:96)){
+  testset2[,i] = as.numeric(testset2[,i])
+}
+
+
 preprocessing.vals <- preProcess(trainset2[,2:96], method = c("center", "scale"))
 # standardize the training data
 train.predictors.standardized <- predict(preprocessing.vals, trainset2[,2:96])
@@ -592,7 +603,7 @@ model.gbm
 
 
 ########################### Neural Networks ########################################
-nn <- train(train.predictors.standardized, train[,1], method='nnet', 
+nn <- train(train.predictors.standardized, trainset2[,1], method='nnet', 
             trControl=trainControl(method='cv'),tuneLength=4)
 
 # Note for neural nets use the predict.train command
